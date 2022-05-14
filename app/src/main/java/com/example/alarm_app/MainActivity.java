@@ -23,12 +23,15 @@ public class MainActivity extends AppCompatActivity {
     TextView timeView;
     TimePickerDialog timePicker;
     public int tHour, tMinute;
-
+    private MyBroadcastReceiver alarm;
+    Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        context = this.getApplicationContext();
         timeView = findViewById(R.id.timeView);
+        alarm = new MyBroadcastReceiver();
         timeView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -41,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
                                 // initialize hour and minute
                                 tHour = hour;
                                 tMinute = minute;
+
+                                getIntent().putExtra("tHour", tHour);
+                                getIntent().putExtra("tMinute", tMinute);
                                 // Store hour and minute in string
                                 String time = tHour + ":" + tMinute;
                                 // Init 24 hours time format
@@ -65,27 +71,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     public void setTime(View view) {
-        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        Date date = new Date();
-        Toast.makeText(this, "Time set successfully", Toast.LENGTH_SHORT).show();
-
-        Calendar cal_alarm = Calendar.getInstance();
-        Calendar cal_now = Calendar.getInstance();
-
-        cal_now.setTime(date);
-        cal_alarm.setTime(date);
-
-        cal_alarm.set(Calendar.HOUR_OF_DAY, tHour);
-        cal_alarm.set(Calendar.MINUTE, tMinute);
-        cal_alarm.set(Calendar.SECOND, 0);
-
-        if (cal_alarm.before(cal_now)){
-            cal_alarm.add(Calendar.DATE, 1);
-        }
-        Intent i = new Intent(MainActivity.this,Snooze.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this,12345,i,PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.set(AlarmManager.RTC_WAKEUP,cal_alarm.getTimeInMillis(),pendingIntent);
-
+        alarm.onReceive(context, getIntent());
+        alarm.setAlarm(context);
     }
     public void unsetTime(View view) {
 
