@@ -46,9 +46,11 @@ public class MainActivity extends AppCompatActivity {
         context = this.getApplicationContext();
         timeView = findViewById(R.id.timeView);
         Bundle extras = getIntent().getExtras();
+        /** Check if the alarm is already snoozed*/
         if (extras != null) {
            notificationSent = extras.getBoolean("notification");
         }
+        /** If it is already snoozed show the next ring time on the time viewer **/
         if (notificationSent == true){
             Log.e("extra", "extra is running");
             boolean notificationSent = extras.getBoolean("notification");
@@ -73,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 timePicker.updateTime(tHour,tMinute);
             }
         }
+        /** Create the broadcastReceiver to handle the actions, coming from the MyBroadcastReceiver class **/
         alarm = new MyBroadcastReceiver();
         createNotificationChannel();
         receiver = new BroadcastReceiver()
@@ -91,12 +94,14 @@ public class MainActivity extends AppCompatActivity {
         };
             }
     @Override
+    /** Register the BroadcastReceiver **/
     protected void onStart() {
         super.onStart();
         LocalBroadcastManager.getInstance(this).registerReceiver((receiver),
                 new IntentFilter(MyBroadcastReceiver.COPA_RESULT)
         );
     }
+    /** select time on the timepicker **/
     public void selectTime(View view){
         initTimePicker();
         // Display previous selected time
@@ -104,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         //Show dialog
         timePicker.show();
     }
+    /** initialize timepicker **/
     public void initTimePicker() {
         // Initialize time picker dialog
         timePicker = new TimePickerDialog(
@@ -152,13 +158,16 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+    /** Set alarm **/
     public void setTime(View view) {
         alarm.onReceive(context, getIntent());
         alarm.setAlarm(context);
     }
+    /** Stop alarm **/
     public void stopAlarm(View view) {
         alarm.stopAlarm(context);
     }
+    /** Create notification channel to handle the notification, coming from the MyBroadcastReceiver class*/
     private void createNotificationChannel() {
     CharSequence name = "alarmChannel";
     String description = "Channel for Alarm Manager";

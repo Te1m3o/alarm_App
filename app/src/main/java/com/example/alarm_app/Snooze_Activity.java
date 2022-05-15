@@ -23,14 +23,16 @@ public class Snooze_Activity extends AppCompatActivity {
         context = this.getApplicationContext();
         startAlarm();
     }
+    /** Starts ringing **/
     private void startAlarm() {
         player.setLooping(true);
         player.start();
     }
+    /** Stops ringing and gets in the snooze mode **/
     public void stopAlarm(View view) {
         player.stop();
         Toast.makeText(this, "Alarm stopped", Toast.LENGTH_SHORT).show();
-        alarm.updateTime(context);
+        alarm.updateAlarm(context);
         finish();
     }
 }

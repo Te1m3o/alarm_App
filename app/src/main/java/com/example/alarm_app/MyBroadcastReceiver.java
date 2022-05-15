@@ -30,7 +30,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     Calendar cal_alarm;
     @Override
     public void onReceive(Context context, Intent intent) {
-        // TODO Auto-generated method stub
+        /** Get extras from the main activity **/
         Bundle extras = intent.getExtras();
         if (extras != null) {
             if(extras.containsKey("tHour")){
@@ -43,12 +43,14 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             }
         }
     }
+    /** send message to the Main activity **/
     public void sendResult(String message) {
         Intent intent = new Intent(COPA_RESULT);
         if(message != null)
             intent.putExtra(COPA_MESSAGE, message);
         broadcaster.sendBroadcast(intent);
     }
+    /** Set Alarm **/
     public void setAlarm(Context context) {
         alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         Date date = new Date();
@@ -72,7 +74,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         PendingIntent pendingIntent = PendingIntent.getActivity(context,12345,i,PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.set(AlarmManager.RTC_WAKEUP,cal_alarm.getTimeInMillis(),pendingIntent);
     }
-    public void updateTime(Context context) {
+    /** update and set alarm depending on the snooze time **/
+    public void updateAlarm(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("sharedPrefs",0);
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/Berlin"));
         tHour = calendar.get(calendar.HOUR_OF_DAY) + sharedPreferences.getInt("hour",0);
@@ -100,14 +103,16 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         sendResult("time updated");
         sendNotification(context);
     }
+    /** send notification, if snooze button clicked to inform user about snooze time **/
     public void sendNotification(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("sharedPrefs",0);
         Intent i = new Intent(context, MainActivity.class);
         i.putExtra("notification", true);
         PendingIntent pendingIntent = PendingIntent.getActivity(context,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context,"alarmSnooze")
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentTitle("Alarm Manager")
-                .setContentText("Alarm klingt nach einer Minute wieder")
+                .setContentText("Alarm klingt nach " + (sharedPreferences.getInt("hour", 0) * 60) + sharedPreferences.getInt("minute",0) + " Minuten wieder")
                 .setAutoCancel(true)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -115,6 +120,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
         notificationManagerCompat.notify(123,builder.build());
     }
+    /** Stop alarm **/
     public void stopAlarm(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         intent = new Intent(context, Snooze_Activity.class);
@@ -123,6 +129,5 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         Toast.makeText(context, "Alarm stopped successfully", Toast.LENGTH_SHORT).show();
         broadcaster = LocalBroadcastManager.getInstance(context);
         sendResult("alarm stop");
-
     }
 }
