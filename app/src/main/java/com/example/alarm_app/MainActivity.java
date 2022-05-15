@@ -1,12 +1,16 @@
 package com.example.alarm_app;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
     TextView timeView;
@@ -27,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     public int tHour, tMinute;
     private MyBroadcastReceiver alarm;
     Context context;
+    BroadcastReceiver receiver;
+    String time;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,9 +41,51 @@ public class MainActivity extends AppCompatActivity {
         context = this.getApplicationContext();
         timeView = findViewById(R.id.timeView);
         alarm = new MyBroadcastReceiver();
+        receiver = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String s = intent.getStringExtra(MyBroadcastReceiver.COPA_MESSAGE);
+                if (s=="time updated"){
+
+                    SharedPreferences sharedPreferences = context.getSharedPreferences("sharedPrefs",0);
+                    Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/Berlin"));
+                    tHour = calendar.get(calendar.HOUR_OF_DAY) + sharedPreferences.getInt("hour",0);
+                    tMinute = calendar.get(calendar.MINUTE) + sharedPreferences.getInt("minute",0);
+                    time = tHour + ":" + tMinute;
+                    // Init 24 hours time format
+                    SimpleDateFormat t24Hours= new SimpleDateFormat(
+                            "HH:mm"
+                    );
+                    try {
+                        Date date = t24Hours.parse(time);
+                        //Set selected time on text view
+                        timeView.setText(t24Hours.format(date));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    timePicker.updateTime(tHour,tMinute);
+                }
+                if (s=="alarm stop"){
+                    initTimePicker();
+                    timeView.setText("Select Time");
+                }
             }
+        };
+            }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(this).registerReceiver((receiver),
+                new IntentFilter(MyBroadcastReceiver.COPA_RESULT)
+        );
+    }
     public void selectTime(View view){
         initTimePicker();
+        // Display previous selected time
+        timePicker.updateTime(tHour, tMinute);
+        //Show dialog
+        timePicker.show();
     }
     public void initTimePicker() {
         // Initialize time picker dialog
@@ -52,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                         getIntent().putExtra("tHour", tHour);
                         getIntent().putExtra("tMinute", tMinute);
                         // Store hour and minute in string
-                        String time = tHour + ":" + tMinute;
+                        time = tHour + ":" + tMinute;
                         // Init 24 hours time format
                         SimpleDateFormat t24Hours= new SimpleDateFormat(
                                 "HH:mm"
@@ -67,10 +116,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 },24,0,true
         );
-        // Display previous selected time
-        timePicker.updateTime(tHour, tMinute);
-        //Show dialog
-        timePicker.show();
     }
     /** handle menu **/
     @Override

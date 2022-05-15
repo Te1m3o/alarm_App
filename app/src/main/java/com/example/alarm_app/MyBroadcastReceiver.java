@@ -10,14 +10,19 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
+    static final public String COPA_RESULT = "com.controlj.copame.backend.COPAService.REQUEST_PROCESSED";
+    static final public String COPA_MESSAGE = "com.controlj.copame.backend.COPAService.COPA_MSG";
     private int tHour, tMinute;
     AlarmManager alarmManager;
     Intent intent;
+    private LocalBroadcastManager broadcaster;
     PendingIntent pendingIntent;
     Calendar cal_alarm;
     @Override
@@ -34,6 +39,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 tMinute = extras.getInt("tMinute");
             }
         }
+    }
+    public void sendResult(String message) {
+        Intent intent = new Intent(COPA_RESULT);
+        if(message != null)
+            intent.putExtra(COPA_MESSAGE, message);
+        broadcaster.sendBroadcast(intent);
     }
     public void setAlarm(Context context) {
         alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
@@ -82,6 +93,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         intent = new Intent(context, Snooze_Activity.class);
         pendingIntent = PendingIntent.getActivity(context,12345,intent,PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.set(AlarmManager.RTC_WAKEUP,cal_alarm.getTimeInMillis(),pendingIntent);
+        broadcaster = LocalBroadcastManager.getInstance(context);
+        sendResult("time updated");
     }
     public void stopAlarm(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -89,6 +102,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         pendingIntent = PendingIntent.getActivity(context,12345,intent,PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.cancel(pendingIntent);
         Toast.makeText(context, "Alarm stopped successfully", Toast.LENGTH_SHORT).show();
+        broadcaster = LocalBroadcastManager.getInstance(context);
+        sendResult("alarm stop");
 
     }
 }
