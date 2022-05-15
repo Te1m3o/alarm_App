@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.BroadcastReceiver;
@@ -11,7 +13,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,37 +38,50 @@ public class MainActivity extends AppCompatActivity {
     Context context;
     BroadcastReceiver receiver;
     String time;
+    boolean notificationSent = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this.getApplicationContext();
         timeView = findViewById(R.id.timeView);
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+           notificationSent = extras.getBoolean("notification");
+        }
+        if (notificationSent == true){
+            Log.e("extra", "extra is running");
+            boolean notificationSent = extras.getBoolean("notification");
+            if (notificationSent==true){
+                initTimePicker();
+                SharedPreferences sharedPreferences = context.getSharedPreferences("sharedPrefs",0);
+                Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/Berlin"));
+                tHour = calendar.get(calendar.HOUR_OF_DAY) + sharedPreferences.getInt("hour",0);
+                tMinute = calendar.get(calendar.MINUTE) + sharedPreferences.getInt("minute",0);
+                time = tHour + ":" + tMinute;
+                // Init 24 hours time format
+                SimpleDateFormat t24Hours= new SimpleDateFormat(
+                        "HH:mm"
+                );
+                try {
+                    Date date = t24Hours.parse(time);
+                    //Set selected time on text view
+                    timeView.setText(t24Hours.format(date));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                timePicker.updateTime(tHour,tMinute);
+            }
+        }
         alarm = new MyBroadcastReceiver();
+        createNotificationChannel();
         receiver = new BroadcastReceiver()
         {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String s = intent.getStringExtra(MyBroadcastReceiver.COPA_MESSAGE);
                 if (s=="time updated"){
-
-                    SharedPreferences sharedPreferences = context.getSharedPreferences("sharedPrefs",0);
-                    Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/Berlin"));
-                    tHour = calendar.get(calendar.HOUR_OF_DAY) + sharedPreferences.getInt("hour",0);
-                    tMinute = calendar.get(calendar.MINUTE) + sharedPreferences.getInt("minute",0);
-                    time = tHour + ":" + tMinute;
-                    // Init 24 hours time format
-                    SimpleDateFormat t24Hours= new SimpleDateFormat(
-                            "HH:mm"
-                    );
-                    try {
-                        Date date = t24Hours.parse(time);
-                        //Set selected time on text view
-                        timeView.setText(t24Hours.format(date));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    timePicker.updateTime(tHour,tMinute);
+                    MainActivity.this.finish();
                 }
                 if (s=="alarm stop"){
                     initTimePicker();
@@ -141,5 +158,15 @@ public class MainActivity extends AppCompatActivity {
     }
     public void stopAlarm(View view) {
         alarm.stopAlarm(context);
+    }
+    private void createNotificationChannel() {
+    CharSequence name = "alarmChannel";
+    String description = "Channel for Alarm Manager";
+    int importance = NotificationManager.IMPORTANCE_HIGH;
+        NotificationChannel channel = new NotificationChannel("alarmSnooze", name,importance);
+        channel.setDescription(description);
+
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
     }
 }

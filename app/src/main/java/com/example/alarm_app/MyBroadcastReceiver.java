@@ -1,6 +1,7 @@
 package com.example.alarm_app;
 
 import android.app.AlarmManager;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,6 +11,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.Calendar;
@@ -95,6 +98,22 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         alarmManager.set(AlarmManager.RTC_WAKEUP,cal_alarm.getTimeInMillis(),pendingIntent);
         broadcaster = LocalBroadcastManager.getInstance(context);
         sendResult("time updated");
+        sendNotification(context);
+    }
+    public void sendNotification(Context context) {
+        Intent i = new Intent(context, MainActivity.class);
+        i.putExtra("notification", true);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context,"alarmSnooze")
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setContentTitle("Alarm Manager")
+                .setContentText("Alarm klingt nach einer Minute wieder")
+                .setAutoCancel(true)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(pendingIntent);
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
+        notificationManagerCompat.notify(123,builder.build());
     }
     public void stopAlarm(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
