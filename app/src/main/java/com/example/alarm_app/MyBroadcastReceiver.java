@@ -1,16 +1,11 @@
 package com.example.alarm_app;
 
 import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -53,7 +48,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         if (cal_alarm.before(cal_now)){
             cal_alarm.add(Calendar.DATE, 1);
         }
-        Intent i = new Intent(context,Snooze.class);
+        Intent i = new Intent(context, Snooze_Activity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(context,12345,i,PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.set(AlarmManager.RTC_WAKEUP,cal_alarm.getTimeInMillis(),pendingIntent);
     }

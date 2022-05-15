@@ -19,8 +19,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Snooze"
+            android:name=".Snooze_Activity"
             android:label="Snooze"></activity>
+        <activity
+            android:name=".Settings_Activity"
+            android:label="Settings_Activity"></activity>
         <receiver
             android:name=".MyBroadcastReceiver"
             android:enabled="true"

@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class Snooze extends AppCompatActivity {
+public class Snooze_Activity extends AppCompatActivity {
     MediaPlayer player;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,5 +25,7 @@ public class Snooze extends AppCompatActivity {
     public void stopAlarm(View view) {
         player.stop();
         Toast.makeText(this, "Alarm stopped", Toast.LENGTH_SHORT).show();
+        finishActivity(12345);
+        finish();
     }
 }

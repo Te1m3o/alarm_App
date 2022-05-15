@@ -8,6 +8,8 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -69,6 +71,24 @@ public class MainActivity extends AppCompatActivity {
                 timePicker.show();
             }
         });
+    }
+    /** handle menu **/
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.mymenu, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.setting:
+                Intent intent = new Intent(MainActivity.this, Settings_Activity.class);
+                startActivity(intent);
+                break;
+        }
+        return true;
     }
     public void setTime(View view) {
         alarm.onReceive(context, getIntent());
