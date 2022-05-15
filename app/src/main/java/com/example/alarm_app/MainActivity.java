@@ -34,43 +34,43 @@ public class MainActivity extends AppCompatActivity {
         context = this.getApplicationContext();
         timeView = findViewById(R.id.timeView);
         alarm = new MyBroadcastReceiver();
-        timeView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Initialize time picker dialog
-                 timePicker = new TimePickerDialog(
-                        MainActivity.this,
-                        new TimePickerDialog.OnTimeSetListener(){
-                            @Override
-                            public void onTimeSet(TimePicker view, int hour, int minute) {
-                                // initialize hour and minute
-                                tHour = hour;
-                                tMinute = minute;
-
-                                getIntent().putExtra("tHour", tHour);
-                                getIntent().putExtra("tMinute", tMinute);
-                                // Store hour and minute in string
-                                String time = tHour + ":" + tMinute;
-                                // Init 24 hours time format
-                                SimpleDateFormat t24Hours= new SimpleDateFormat(
-                                        "HH:mm"
-                                );
-                                try {
-                                    Date date = t24Hours.parse(time);
-                                    //Set selected time on text view
-                                    timeView.setText(t24Hours.format(date));
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        },24,0,true
-                );
-                // Display previous selected time
-                timePicker.updateTime(tHour, tMinute);
-                //Show dialog
-                timePicker.show();
             }
-        });
+    public void selectTime(View view){
+        initTimePicker();
+    }
+    public void initTimePicker() {
+        // Initialize time picker dialog
+        timePicker = new TimePickerDialog(
+                MainActivity.this,
+                new TimePickerDialog.OnTimeSetListener(){
+                    @Override
+                    public void onTimeSet(TimePicker view, int hour, int minute) {
+                        // initialize hour and minute
+                        tHour = hour;
+                        tMinute = minute;
+
+                        getIntent().putExtra("tHour", tHour);
+                        getIntent().putExtra("tMinute", tMinute);
+                        // Store hour and minute in string
+                        String time = tHour + ":" + tMinute;
+                        // Init 24 hours time format
+                        SimpleDateFormat t24Hours= new SimpleDateFormat(
+                                "HH:mm"
+                        );
+                        try {
+                            Date date = t24Hours.parse(time);
+                            //Set selected time on text view
+                            timeView.setText(t24Hours.format(date));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },24,0,true
+        );
+        // Display previous selected time
+        timePicker.updateTime(tHour, tMinute);
+        //Show dialog
+        timePicker.show();
     }
     /** handle menu **/
     @Override
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         alarm.onReceive(context, getIntent());
         alarm.setAlarm(context);
     }
-    public void unsetTime(View view) {
-
+    public void stopAlarm(View view) {
+        alarm.stopAlarm(context);
     }
 }
